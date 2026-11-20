@@ -11,6 +11,8 @@
 
 ## Detalles del código y la solución del sistema:
 
+Para esta práctica, he usado Threads para poder controlar varios elementos simultáneamente sin tener que usar delay() y bloquear el programa.
+
 ## Esquema del circuito (con Fritzing):
 
 ## Fotos y videos del montaje y su funcionamiento:
