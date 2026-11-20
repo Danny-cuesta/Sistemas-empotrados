@@ -9,7 +9,7 @@
 • Sensor de Distancia por Ultrasonidos  
 • Pulsador / Botón externo  
 
-## Solución del sistema:
+## Detalles del código y la solución del sistema:
 
 ## Esquema del circuito:
 
