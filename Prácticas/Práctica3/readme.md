@@ -2,10 +2,10 @@
 
 ## Sensores utilizados en la práctica:
 
-• 2 LEDs estándar
-• Pantalla LCD
-• Módulo Joystick
-• Sensor de Temperatura y Humedad DHT11.
-• Sensor de Distancia por Ultrasonidos
-• Pulsador / Botón externo.
+• 2 LEDs estándar  
+• Pantalla LCD  
+• Módulo Joystick  
+• Sensor de Temperatura y Humedad DHT11  
+• Sensor de Distancia por Ultrasonidos  
+• Pulsador / Botón externo  
 
