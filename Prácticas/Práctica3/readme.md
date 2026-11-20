@@ -9,3 +9,9 @@
 • Sensor de Distancia por Ultrasonidos  
 • Pulsador / Botón externo  
 
+## Solución del sistema:
+
+## Esquema del cuito:
+
+##Fotos del montaje:
+
