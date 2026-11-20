@@ -11,7 +11,7 @@
 
 ## Solución del sistema:
 
-## Esquema del cuito:
+## Esquema del circuito:
 
 ## Fotos del montaje:
 
