@@ -13,5 +13,5 @@
 
 ## Esquema del cuito:
 
-##Fotos del montaje:
+## Fotos del montaje:
 
