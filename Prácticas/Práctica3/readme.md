@@ -13,5 +13,5 @@
 
 ## Esquema del circuito:
 
-## Fotos del montaje:
+## Fotos y videos del montaje y su funcionamiento:
 
