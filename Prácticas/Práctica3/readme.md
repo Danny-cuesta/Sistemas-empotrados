@@ -11,7 +11,7 @@
 
 ## Detalles del código y la solución del sistema:
 
-## Esquema del circuito:
+## Esquema del circuito (con Fritzing):
 
 ## Fotos y videos del montaje y su funcionamiento:
 
