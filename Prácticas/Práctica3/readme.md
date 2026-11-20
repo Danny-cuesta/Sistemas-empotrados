@@ -15,5 +15,7 @@ Para esta práctica, he usado Threads para poder controlar varios elementos simu
 
 ## Esquema del circuito (con Fritzing):
 
+<img width="1376" height="964" alt="cap_esquema_empotrados_practica3" src="https://github.com/user-attachments/assets/be08b8cf-9925-4662-a3a2-d1a56efac856" />
+
 ## Fotos y videos del montaje y su funcionamiento:
 
