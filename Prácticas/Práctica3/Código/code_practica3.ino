@@ -13,7 +13,7 @@
 ThreadController controller; //-->  Maneja y controla los hilos (agrupa varias tareas y decide cuáles toca ejecutar)
 Thread threadDistance; //--> Lanza el pulso del ultrasonidos y guarda la distancia en una variable
 Thread threadTemperature; //--> Lee temperatura y humedad y las guarda en variables
-Thread threadJoystick; //--> Mira el joystick y el botón externo, y apunta “ha pasado esto”
+Thread threadJoystickBoton; //--> Mira el joystick y el botón externo, y apunta “ha pasado esto”
 Thread threadLCD; //--> Dibuja en el LCD lo que toque según el estado actual
 Thread threadMachine; //--> Decide en qué estado está el sistema y cuándo se cambia de uno a otro, máquina de estados
 
@@ -88,6 +88,13 @@ const int pinX = A4;
 const int pinY = A5;
 const int pinSW = 7;
 
+//--Variables que indican cambios de eventos del joystick y del botón externo
+bool up = false;
+bool down = false;
+bool left = false;
+bool admin = false;
+unsigned long durationBoton = 0; //--> Para comprobar la duración del botón
+
 
 //_________________________________________________________________________________________________________
 //_________________________________________________________________________________________________________
@@ -132,13 +139,34 @@ void readTemperature(){
 
 
 
-//--Función que lee la entrada del joystick
-void readJoystick(){
+//--Función que lee la entrada del joystick y del botón
+void readJoystickBoton(){
 
   //--Definición de variables (joystick)
   int x = analogRead(pinX);
   int y = analogRead(pinY);
   int botonJoystick = digitalRead(pinSW);
+
+  //--Evaluar los eventos segun los valores del joystick
+  if (y < 300){ //--> Arriba
+    up = true;
+  }
+
+  if (y > 700){ //--> Abajo
+    down = true;
+  }
+
+  if (x < 300){ //--> izquierda
+    left = true;
+  }
+  
+
+  //--Botón externo para entrar en el modo admin (si está presionado más de 5 segundos)
+  durationBoton = millis()
+  if (millis() - durationBoton >= 5000){ // **
+    admin = true;
+  }
+
 
 }
 
@@ -183,6 +211,7 @@ void printLCD(){
           break;
 
       }
+
       break;
 
 
@@ -191,9 +220,7 @@ void printLCD(){
       linea(1, "");
       break;
 
-
   }
-  
 
 }
 
@@ -205,6 +232,47 @@ void printLCD(){
 //--Función que actua como máquina de estados y decide cuando el sistema cambia de uno a otro
 void stateMachine(){
 
+  //--Evaluar los valores del joysitck
+  switch (modo){
+
+    case ARRANQUE:
+      
+      break;
+
+
+    case SERVICIO:
+
+      switch(Servicio){ //--> Contemplar cada modo del servicio
+        case ESPERANDO:
+         
+          break;
+
+        case ENTORNO:
+          break;
+
+        case CATALOGO:
+          break;
+
+        case PREPARANDO:
+        
+          break;
+
+        case RETIRAR:
+         
+          break;
+
+      }
+
+      break;
+
+
+    case ADMIN:
+     
+      break;
+
+  }
+
+  up = down = left = false; //-> Resetear variables
 
 }
 
@@ -244,8 +312,8 @@ void setup() {
   threadTemperature.onRun(readTemperature);
   threadTemperature.setInterval(300);
 
-  threadJoystick.onRun(readJoystick);
-  threadJoystick.setInterval(1500);
+  threadJoystickBoton.onRun(readJoystickBoton);
+  threadJoystickBoton.setInterval(1500);
 
   threadLCD.onRun(printLCD);
   threadLCD.setInterval(400);
@@ -255,7 +323,7 @@ void setup() {
 
   controller.add(&threadDistance);
   controller.add(&threadTemperature);
-  controller.add(&threadJoystick);
+  controller.add(&threadJoystickBoton);
   controller.add(&threadLCD);
   controller.add(&threadMachine);
 
@@ -291,5 +359,4 @@ void loop() {
 void interrupcionBoton() {
   pulsado = true;
 }
-
 
