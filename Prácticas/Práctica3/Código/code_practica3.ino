@@ -77,10 +77,18 @@ LiquidCrystal lcd(13, 12, 11, 10, 9, 8);
 // D4-D7: Por aquí Arduino envía los datos
 // A: 5V
 // K: GND
-const char* products[5] = {"Café Solo", "Café Cortado", "Café Doble", "Café Premium", "Chocolate"};
+
+//--Variables del catálogo
+const char* products[5] = {"Cafe Solo", "Cafe Cortado", "Cafe Doble", "Cafe Premium", "Chocolate"};
 int costs[5] = {100, 110, 125, 150, 200};
-unsigned long duracionPrep = 0; //--> Indica cuanto durará la preparación de la bebida
+unsigned long durationPrep = 0; //--> Indica cuanto durará la preparación de la bebida
 byte selection = 0; //--> Producto marcado en el catálogo
+
+//--Variables del menú admin
+const char* opcionesAdmin[4] = {"Ver temperatura", "Ver distancia", "Ver contador", "Modif. precios"};
+byte menuSel = 0; //--> Opción marcada del menú principal del admin
+byte priceSel = 0; //--> Producto marcado en "Modificar precios"
+int priceEdit = 0; //--> Copia del coste del producto seleccionado para editarlo
 
 //--Variables del joystick
 const int pinX = A4;
@@ -111,7 +119,7 @@ bool admin1Time = false; //--> Para que cada pulsación larga, admin se active u
 //unsigned long durationBoton = 0; //--> Para comprobar la duración del botón
 
 //--Parpadeo del arranque
-const unsigned long T_MEDIO_CICLO = 500;  //--> El LED1 cambia cada 500 ms
+const unsigned long T_MEDIO_CICLO = 500;  //--> El LED1 cambia de estado cada 500ms (porque parpadea, se enciende y se apaga, cada 1s)
 byte cambiosLed = 0; //--> Contador de los cambios de los leds
 
 
@@ -132,11 +140,28 @@ void irA(Servicio s){
 //--------------------------------------------------
 
 
-//--Función que devuleve el sistema al punto de partida
+//--Función que devuelve el sistema al punto de partida
 void reiniciarServicio(){
   digitalWrite(ledVerdePin, LOW);
   digitalWrite(ledAzulPin, LOW);
   irA(ESPERANDO);
+}
+
+
+//--------------------------------------------------
+
+
+//--Función que imprime en la pantalla una fila, rellenando con espacios hasta 16 caracteres
+void printFilaLCD(byte fila, const char* caracter){
+  char buffer[17]; //--> Reserva 16 caracteres + \0, para preparar la linea antes de imprimirla en la pantalla
+  //--> Se reserva en memoria y así cada impresión no se sobrescribe de mala manera, cada linea sale limpia
+  snprintf(buffer, sizeof(buffer), "%-16s", caracter); //--> Función para formatear y guardar texto dentro de un array de caracteres
+  //--> buffer: Dónde escribir
+  //--> sizeof(buffer): Cuánto cabe como máximo (17), así nunca se escribe de más
+  //--> "%-16s": El formato
+  //--> caracter: El texto que se mete en el formato
+  lcd.setCursor(0, fila); //--> Coloca el texto siempre a la izquierda y en la fila que se indique
+  lcd.print(buffer); //--> Imprimimos
 }
 
 
@@ -276,12 +301,13 @@ void readJoystickBoton(){
 
 //--Función que imprime en la pantalla lo que toque segun el estado actual
 void printLCD(){
+  char buf[17];
 
   switch (modo){
 
     case ARRANQUE:
-      lcd.print(0, "CARGANDO...");
-      lcd.print(1, "");
+      printFilaLCD(0, "CARGANDO...");
+      printFilaLCD(1, "");
       break;
 
 
@@ -289,59 +315,92 @@ void printLCD(){
 
       switch (servicio){ //--> Contemplar cada modo del servicio
         case ESPERANDO:
-          lcd.print(0, "ESPERANDO CLIENTE...");
-          lcd.print(1, "");
+          printFilaLCD(0, "ESPERANDO");
+          printFilaLCD(1, "CLIENTE...");
           break;
 
         case ENTORNO:
+          snprintf(buf, sizeof(buf), "Temp: %d %cC", (int)temperature, 223); //--> 223 = símbolo "º" para los grados
+          printFilaLCD(0, buf);
+          snprintf(buf, sizeof(buf), "Hum: %d %%", (int)humidity);
+          printFilaLCD(1, buf);
           break;
 
         case CATALOGO:
+          printFilaLCD(0, products[selection]); //--> Imprimimos la selección marcada
+          snprintf(buf, sizeof(buf), "%d.%02d EUR", costs[selection] / 100, costs[selection] % 100); //--> Formatea de céntimos a euros (de dos decimales)
+          printFilaLCD(1, buf);
           break;
 
         case PREPARANDO:
-          lcd.print(0, "PREPARANDO BEBIDA..."); //--> Falta añadir el nombre de la selección
-          lcd.print(1, "");
+          printFilaLCD(0, "PREPARANDO");
+          snprintf(buf, sizeof(buf), "%s...", products[selection]); //--> Nombre de la selección
+          printFilaLCD(1, buf);
           break;
 
         case RETIRAR:
-          lcd.print(0, "RETIRE SU BEBIDA.");
-          lcd.print(1, "");
+          printFilaLCD(0, "RETIRE SU BEBIDA.");
+          printFilaLCD(1, "");
           break;
 
       }
       break;
 
 
-      case ADMIN:
+    case ADMIN: 
 
-        switch(admin){
-          case MENU:
-         
-            break;
+      switch (admin){
 
-          case VER_TEMP:
+        case MENU:
+          snprintf(buf, sizeof(buf), ">%s", opcionesAdmin[menuSel]); //--> La marcada lleva ">"
+          printFilaLCD(0, buf);
+          if (menuSel < 3){ //--> Si no se ha llegado al final, seguir imprimiendo en este formato
+            snprintf(buf, sizeof(buf), " %s", opcionesAdmin[menuSel + 1]); //--> La siguiente, debajo
+            printFilaLCD(1, buf);
+          }
+          else{
+            printFilaLCD(1, ""); //--> Si no hay más opciones, no se imprime nada debajo
+          }
+          break;
 
-            break;
 
-          case VER_DIST:
+        case VER_TEMP:
+          snprintf(buf, sizeof(buf), "Temp: %d %cC", (int)temperature, 223);
+          printFilaLCD(0, buf);
+          snprintf(buf, sizeof(buf), "Hum: %d %%", (int)humidity);
+          printFilaLCD(1, buf);
+          break;
 
-            break;
 
-          case VER_CONT:
-        
-            break;
+        case VER_DIST:
+          printFilaLCD(0, "Distancia:");
+          snprintf(buf, sizeof(buf), "%d cm", (int)distance);
+          printFilaLCD(1, buf);
+          break;
 
-          case PRECIOS_LISTA:
-         
-            break;
 
-          case PRECIOS_EDIT:
-         
-            break;
+        case VER_CONT:
+          printFilaLCD(0, "Contador:");
+          snprintf(buf, sizeof(buf), "%lu s", millis() / 1000); //--> / 1000: Pasa el millis a segundos
+          printFilaLCD(1, buf);
+          break;
 
-        }
-        break;
+
+        case PRECIOS_LISTA:
+          printFilaLCD(0, products[priceSel]);
+          snprintf(buf, sizeof(buf), "%d.%02d EUR", costs[priceSel] / 100, costs[priceSel] % 100); //--> Formatea a euros
+          printFilaLCD(1, buf);
+          break;
+
+
+        case PRECIOS_EDIT:
+          printFilaLCD(0, products[priceSel]);
+          snprintf(buf, sizeof(buf), "Nuevo: %d.%02d EUR", priceEdit / 100, priceEdit % 100); //--> Formatea a euros
+          printFilaLCD(1, buf);
+          break;
+
+      }
+      break;
 
   }
 
@@ -355,23 +414,29 @@ void printLCD(){
 //--Función que actua como máquina de estados y decide cuando el sistema cambia de uno a otro
 void stateMachine(){
 
+  //--PRUEBA DEL WATCHDOG (borrar antes de entregar)
+  //  El sistema se recupera solo cuando se bloquea
+  //if (evSelection && modo == ADMIN){
+  //  while (true);
+  //}
+
+
   //--Comprobar si está en modo admin
   if(evAdmin){ //--> Se ha pulsado previamente el botón durante 5 segundos
 
     //--Cambiar de estado en función de si está en uno o en otro
     if (modo == ADMIN){ //--> Salir de Admin
       modo = SERVICIO;
-      digitalWrite(led1Pin, LOW);
-      digitalWrite(led2Pin, LOW);
+      digitalWrite(ledVerdePin, LOW);
+      digitalWrite(ledAzulPin, LOW);
       reiniciarServicio();
     }
     else if (modo == SERVICIO){ //--> Entrar en admin
       modo = ADMIN;
       admin = MENU;
-      //menuSel = 0;
       //--Se encienden los dos leds
-      digitalWrite(led1Pin, HIGH);
-      digitalWrite(led2Pin, HIGH);
+      digitalWrite(ledVerdePin, HIGH);
+      digitalWrite(ledAzulPin, HIGH);
     }
   }
   else if(evCancelar && modo == SERVICIO){ //--> Reiniciar sistema
@@ -386,16 +451,16 @@ void stateMachine(){
 
       //--¿Han pasado 500 ms desde la última vez que cambió el LED?
       if (millis() - tEstado >= T_MEDIO_CICLO){
-        tEstado = millis(); //-_> Apuntar la "hora" actual para empezar a contar los siguientes 500ms
+        tEstado = millis(); //--> Apuntar la "hora" actual para empezar a contar los siguientes 500ms
 
         //--Invertir el estado del LED, medimos los cambios
-        int estadoActual = digitalRead(led1Pin);
-        digitalWrite(led1Pin, !estadoActual);
+        int estadoActual = digitalRead(ledAzulPin);
+        digitalWrite(ledAzulPin, !estadoActual);
         cambiosLed++;
 
         //--Comprobar los cambios
         if (cambiosLed >= 6){ //--> Se enciende (cambio 1), Se apaga (cambio 2) -->  3 * 2 = 6 cambios (se ha encendido 3 veces)
-          digitalWrite(ledVerdePin, LOW);
+          digitalWrite(ledAzulPin, LOW);
           modo = SERVICIO;
           irA(ESPERANDO); //--> Comenzamos esperando a clientes
         }
@@ -413,6 +478,7 @@ void stateMachine(){
           }
           break;
 
+
         case ENTORNO:
           //--Reservar 5 segundos para ver la tempetarura y la humedad (eso lo imprimirá la función printLCD())
           if(millis() - tEstado >= 5000){ //--> Cuando pasen los 5s, ir al catálogo de productos
@@ -420,13 +486,37 @@ void stateMachine(){
           }
           break;
 
+
         case CATALOGO:
-
+          //--Si se detecta que el joystick gira hacia arriba, la selección del producto disminuye (es la ANTERIOR) 
+          if(evUp && selection > 0){
+            selection--;
+          }
+          //--Hacia abajo, aumenta (la siguiente selección)
+          if(evDown && selection < 4){
+            selection++;
+          }
+          //--Se ha seleccionado un producto (selección activa)
+          if(evSelection){
+            durationPrep = random(4000, 8001); //--> Elegir un número random del tiempo estimado (para que no todos tarden igual)
+            irA(PREPARANDO);
+          }
           break;
 
-        case PREPARANDO:
-        
+
+        case PREPARANDO:{
+          unsigned long t = millis() - tEstado;
+          //--Definimos el brillo del led
+          long brillo = map((long)t, 0, (long)durationPrep, 0, 255);
+          analogWrite(ledVerdePin, constrain(brillo, 0, 255)); //--> El led aumentará progresivamente su brillo hasta obtener el máximo (durante el tiempo que tenemos)
+          //--Si se ha llegado a la duración correspondiente, retirar bebida 
+          if(t >= durationPrep){
+            analogWrite(ledVerdePin, 0); //--> Apagar el led
+            irA(RETIRAR);
+          }
+        }
           break;
+
 
         case RETIRAR:
           //--Esperar 3s y volver a detectar clientes
@@ -443,8 +533,20 @@ void stateMachine(){
 
       switch(admin){
         case MENU:
-         
+          //--Si se detecta que el joystick gira hacia arriba, la selección del producto disminuye (es la ANTERIOR) 
+          if(evUp && menuSel > 0){
+            menuSel--;
+          }
+          //--Hacia abajo, aumenta (la siguiente selección)
+          if(evDown && menuSel < 3){
+            menuSel++;
+          }
+          //--Se ha seleccionado un producto (selección activa)
+          if(evSelection){
+            admin = (Admin)(menuSel + 1); //--> Saltar a la siguiente selección del menú
+          }
           break;
+
 
         //--No indicamos nada porque solo hay que imprimir
         //  * CUANDO VARIOS CASE VAN SEGUIDOS SIN NINGÚN BREAK, COMPARTEN EL MISMO CÓDIGO *
@@ -457,12 +559,42 @@ void stateMachine(){
           }
           break;
 
+
         case PRECIOS_LISTA:
-         
+          if(evUp && priceSel > 0){
+            priceSel--;
+          }
+          //--Hacia abajo, aumenta (la siguiente selección)
+          if(evDown && priceSel < 4){
+            priceSel++;
+          }
+          //--Se ha seleccionado un producto (selección activa)
+          if(evSelection){
+            priceEdit = costs[priceSel]; //--> Copia el precio actual para editarlo
+            admin = PRECIOS_EDIT;
+          }
+          //--Volver al estado anterior
+          if(evLeft){
+            admin = MENU;
+          }
           break;
 
+
         case PRECIOS_EDIT:
-         
+          if (evUp){
+            priceEdit += 5; //--> +0,05€
+          }
+          if (evDown && priceEdit >= 4){ //--> (priceEdit >= 5: El precio no puede quedarse nuna en negativo)
+            priceEdit -= 5; //--> -0,05€
+          }
+          if (evSelection){ //--> Confirmamos
+            costs[priceSel] = priceEdit; //--> Ahora modificamos el valor antiguo por el nuevo en la lista original
+            admin = PRECIOS_LISTA; //--> Volvemos
+          }
+          //--Volver al estado anterior
+          if(evLeft){
+            admin = PRECIOS_LISTA;
+          }
           break;
 
       }
@@ -531,6 +663,9 @@ void setup() {
 
   modo = ARRANQUE;
   tEstado = millis();
+  randomSeed(analogRead(A1)); //--> Semilla distinta en cada arranque
+
+  wdt_enable(WDTO_2S); //--> WATCHDOG: Si pasan 2 s sin refrescar, la placa se reinicia
 
 
 }
@@ -549,6 +684,8 @@ void setup() {
 void loop() {
 
   controller.run(); //--> Ejecuta cada hilo en función de como lo tenga colocado en la cola
+  wdt_reset(); //--> Reiniciar la placa del watchdog
+  //--> Si el watchdog lleva 2s sin que nadie lo refresque, reinicia el microcontrolador
 
 }
 
@@ -573,7 +710,6 @@ void interrupcionBoton() {
   }
 
 }
-
 
 
 
