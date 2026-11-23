@@ -24,12 +24,12 @@ El sensor de temperatura está colocado distinto en el circuito real por falta d
 
 
 
-# Modo arranque:
+### Modo arranque:
 
 
-# Modo servicio:
+### Modo servicio:
 
 
-# Modo admin:
+### Modo admin:
 
 
