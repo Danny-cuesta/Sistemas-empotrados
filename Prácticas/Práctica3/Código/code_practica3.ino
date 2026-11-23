@@ -46,22 +46,19 @@ enum Admin{
 Modo modo = ARRANQUE;
 Servicio servicio = ESPERANDO;
 Admin admin = MENU;
+unsigned long tEstado = 0;   //--> Sirve para controlar el tiempo del estado actual
 
 
 //--Variables de los leds
 const byte ledVerdePin = 3;
 const byte ledAzulPin = 4;
 
-//--Variables del botón
-const byte botonPin = 2;
-volatile bool pulsado = false;
-
 //--Variables del sensor de ultrasonidos
 const byte PIN_TRIGGER = 5;
 const byte PIN_ECHO = 6;
 const float V_SOUND_AIR = 0.0343f; // cm/us
 float distance = 999.0f; //--> Lo inicizalizamos a una distancia grande porque indica "no hay nadie a la vista"
-long duration  = 0;
+long duration = 0;
 
 //--Variables del sensor de temperatura
 const byte dhtPin = A0;
@@ -81,19 +78,27 @@ LiquidCrystal lcd(13, 12, 11, 10, 9, 8);
 // A: 5V
 // K: GND
 const char* products[5] = {"Café Solo", "Café Cortado", "Café Doble", "Café Premium", "Chocolate"};
-float costs[5] = {1.00, 1.10, 1.25, 1.50, 2.00};
+int costs[5] = {100, 110, 125, 150, 200};
 unsigned long duracionPrep = 0; //--> Indica cuanto durará la preparación de la bebida
+byte selection = 0; //--> Producto marcado en el catálogo
 
 //--Variables del joystick
 const int pinX = A4;
 const int pinY = A5;
 const int pinSW = 7;
 
+//--Variables del botón
+const byte botonPin = 2;
+volatile bool pulsado = false;
+volatile unsigned long tPulsado = 0;
+volatile unsigned long tSoltado = 0;
+
 //--Variables que indican cambios de eventos del joystick y del botón externo
 bool evUp = false;
 bool evDown = false;
 bool evLeft = false;
 bool evSelection = false;
+bool evCancelar = false; //--> Evento que indica que se encuentra en estado de reinicio
 //--Variables prev
 bool prevUp = false;
 bool prevDown = false;
@@ -102,11 +107,12 @@ bool prevSelection = false;
 bool prevBoton = false;
 
 bool evAdmin = false;
-unsigned long durationBoton = 0; //--> Para comprobar la duración del botón
+bool admin1Time = false; //--> Para que cada pulsación larga, admin se active una vez
+//unsigned long durationBoton = 0; //--> Para comprobar la duración del botón
 
 //--Parpadeo del arranque
 const unsigned long T_MEDIO_CICLO = 500;  //--> El LED1 cambia cada 500 ms
-byte cambiosLed = 0;
+byte cambiosLed = 0; //--> Contador de los cambios de los leds
 
 
 //_________________________________________________________________________________________________________
@@ -116,15 +122,30 @@ byte cambiosLed = 0;
 
 //--FUNCIONES EXTERNAS NECESARIAS DEL SISTEMA
 
+
+//--Función para ir de un estado a otro
+void irA(Servicio s){
+  servicio = s;
+  tEstado = millis();
+}
+
+//--------------------------------------------------
+
+
 //--Función que devuleve el sistema al punto de partida
 void reiniciarServicio(){
   digitalWrite(ledVerdePin, LOW);
   digitalWrite(ledAzulPin, LOW);
-  servicio = ESPERANDO;
+  irA(ESPERANDO);
 }
 
 
+
 //--------------------------------------------------------------------------------------------------------------
+
+
+//--FUNCIONES HILOS DEL SISTEMA
+
 
 
 //--Función que LEE la distancia
@@ -138,7 +159,7 @@ void readDistance(){
   digitalWrite(PIN_TRIGGER, LOW);
 
   //--Leer el pulso de duración y la distancia
-  duration = pulseIn(PIN_ECHO, HIGH);
+  duration = pulseIn(PIN_ECHO, HIGH, 6000UL); //--> 6000UL es el límite de tiempo de espera
 
   if (duration == 0){ //--> No ha devuelto ningún eco (no ha rebotado la señal), no hay nadie
     distance = 999.0f;
@@ -162,10 +183,10 @@ void readDht(){
 
   //--Comprobar que los números son válidos (NaN significa Not a Number)
   if(!isnan(t)){
-    t = temperature;
+    temperature = t;
   }
   if(!isnan(h)){
-    h = humidity;
+    humidity = h;
   }
 
 }
@@ -209,7 +230,7 @@ void readJoystickBoton(){
     evLeft = true;
   }
   if(selection && !prevSelection){
-    evLeft = true;
+    evSelection = true;
   }
   //--Definir valor de los eventos anteriores
   prevUp = up;
@@ -219,19 +240,32 @@ void readJoystickBoton(){
   
 
   //--Botón externo para entrar en el modo admin (si está presionado más de 5 segundos)
+  noInterrupts(); //--> Desactivamos las interrupciones por un momento para poder copiar los valores correctamente
+  bool bot = pulsado;
+  unsigned long t0 = tPulsado;
+  unsigned long t1 = tSoltado;
+  interrupts(); //--> Se vuelven a activar las interrupciones del código
 
-  bool bot = (digitalRead(botonPin) == LOW);
-
-  //if (bot && !prevBoton) {//--> Acaba de pulsarse
-    //tBotonIni = millis();
-    //admin5Hecho = false;
-  //}
-
-  durationBoton = millis();
-  if (bot && millis() - durationBoton >= 5000){ // **
+  //--5s seguidos pulsado: entrar o salir de Admin
+  if (bot  && !admin1Time && millis() - t0 >= 5000){
     evAdmin = true;
+    admin1Time = true;
   }
 
+  //--Comprobar si al pulsar el botón, se quiso reiniciar el sistema
+  if (!bot && prevBoton){
+    unsigned long d = t1 - t0;
+    if (d >= 2000 && d <= 3000){ //--> Si se pulsó de 2 a 3s, reiniciar sistema
+      evCancelar = true;
+    }
+  }
+
+  //--Al soltar, se prepara la siguiente pulsación (siempre después de la comprobación anterior)
+  if (!bot){
+    admin1Time = false;
+  }
+
+  prevBoton = bot; //--> Actualizamos el pulsado anterior del boton
 
 }
 
@@ -279,10 +313,35 @@ void printLCD(){
       break;
 
 
-    case ADMIN:
-      lcd.print(0, "ADMIN...");
-      lcd.print(1, "");
-      break;
+      case ADMIN:
+
+        switch(admin){
+          case MENU:
+         
+            break;
+
+          case VER_TEMP:
+
+            break;
+
+          case VER_DIST:
+
+            break;
+
+          case VER_CONT:
+        
+            break;
+
+          case PRECIOS_LISTA:
+         
+            break;
+
+          case PRECIOS_EDIT:
+         
+            break;
+
+        }
+        break;
 
   }
 
@@ -304,7 +363,9 @@ void stateMachine(){
         tEstado = millis();
         digitalWrite(ledVerdePin, !digitalRead(ledVerdePin));
         cambiosLed++;
-        if (cambiosLed >= 6){ //--> Se enciende (cambio 1), Se apaga (cambio 2) -->  3 * 2 = 6 cambios
+
+        //--Comprobar los cambios: Se enciende (cambio 1), Se apaga (cambio 2) -->  3 * 2 = 6 cambios
+        if (cambiosLed >= 6){
           digitalWrite(ledVerdePin, LOW);
           modo = SERVICIO;
           irA(ESPERANDO);
@@ -321,9 +382,11 @@ void stateMachine(){
           break;
 
         case ENTORNO:
+
           break;
 
         case CATALOGO:
+
           break;
 
         case PREPARANDO:
@@ -335,17 +398,44 @@ void stateMachine(){
           break;
 
       }
-
       break;
 
 
     case ADMIN:
-     
+
+      switch(admin){
+        case MENU:
+         
+          break;
+
+        case VER_TEMP:
+
+          break;
+
+        case VER_DIST:
+
+          break;
+
+        case VER_CONT:
+        
+          break;
+
+        case PRECIOS_LISTA:
+         
+          break;
+
+        case PRECIOS_EDIT:
+         
+          break;
+
+      }
       break;
 
   }
 
-  evUp = evDown = evLeft = false; //--> Resetear variables
+  //--Resetear variables
+  evUp = evDown = evLeft = evSelection = false;
+  evAdmin = evCancelar = false;
 
 }
 
@@ -375,32 +465,35 @@ void setup() {
   //--Preparar la pantalla
   lcd.begin(16, 2); //--> Son las dimensiones de la pantalla
 
-  dht.begin(); //--> Preparar sensor
+  dht.begin(); //--> Preparar sensor de temperatura
 
-  attachInterrupt(digitalPinToInterrupt(botonPin), interrupcionBoton, FALLING); //--> Interrupción para el botón
+  attachInterrupt(digitalPinToInterrupt(botonPin), interrupcionBoton, CHANGE); //--> Interrupción para el botón
 
 
   //--Configurar los hilos y añadirlos a la cola del controlador (scheduler)
   threadDistance.onRun(readDistance);
-  threadDistance.setInterval(20);
+  threadDistance.setInterval(200);
 
   threadTemperature.onRun(readDht);
-  threadTemperature.setInterval(300);
+  threadTemperature.setInterval(2000);
 
   threadJoystickBoton.onRun(readJoystickBoton);
-  threadJoystickBoton.setInterval(1500);
+  threadJoystickBoton.setInterval(30);
 
   threadLCD.onRun(printLCD);
-  threadLCD.setInterval(400);
+  threadLCD.setInterval(200);
 
   threadMachine.onRun(stateMachine);
-  threadMachine.setInterval(100);
+  threadMachine.setInterval(50);
 
   controller.add(&threadDistance);
   controller.add(&threadTemperature);
   controller.add(&threadJoystickBoton);
   controller.add(&threadLCD);
   controller.add(&threadMachine);
+
+  modo = ARRANQUE;
+  tEstado = millis();
 
 
 }
@@ -417,7 +510,9 @@ void setup() {
 
 //--FUNCIÓN DEL BUCLE PRINCIPAL
 void loop() {
+
   controller.run(); //--> Ejecuta cada hilo en función de como lo tenga colocado en la cola
+
 }
 
 
@@ -430,7 +525,18 @@ void loop() {
 
 //--Función llamada por la interrupción
 void interrupcionBoton() {
-  pulsado = true;
+
+  if (digitalRead(botonPin) == LOW){
+    tPulsado = millis(); //--> Guarda el tiempo en el que se pulsó
+    pulsado = true;
+  }
+  else{
+    tSoltado = millis(); //--> Guarda el tiempo en el que se soltó
+    pulsado = false;
+  }
+
 }
+
+
 
 
