@@ -4,7 +4,7 @@
 ## Sensores utilizados en la práctica:
 
 • 2 LEDs estándar  
-• Pantalla LCD  
+• Pantalla LCD + potenciómetro para regular el contraste 
 • Módulo Joystick  
 • Sensor de Temperatura y Humedad DHT11  
 • Sensor de Distancia por Ultrasonidos  
