@@ -20,5 +20,16 @@ Para esta práctica, he usado Threads para poder controlar varios elementos simu
 Cada color del cable representa un sensor.  
 El sensor de temperatura está colocado distinto en el circuito real por falta de cables.
 
-## Fotos y videos del montaje y su funcionamiento:
+## Foto y videos del montaje y su funcionamiento:
+
+
+
+# Modo arranque:
+
+
+# Modo servicio:
+
+
+# Modo admin:
+
 
