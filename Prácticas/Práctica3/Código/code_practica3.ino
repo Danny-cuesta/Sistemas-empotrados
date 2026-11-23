@@ -447,11 +447,14 @@ void stateMachine(){
           break;
 
         //--No indicamos nada porque solo hay que imprimir
+        //  * CUANDO VARIOS CASE VAN SEGUIDOS SIN NINGÚN BREAK, COMPARTEN EL MISMO CÓDIGO *
         case VER_TEMP:
         case VER_DIST:
-
         case VER_CONT:
-        
+          //--Si se detecta que el joystick gira a la izquierda, volver al menu (en cualquiera de los casos anteriores)
+          if(evLeft){
+            admin = MENU;
+          }
           break;
 
         case PRECIOS_LISTA:
@@ -570,6 +573,7 @@ void interrupcionBoton() {
   }
 
 }
+
 
 
 
