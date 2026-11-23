@@ -12,7 +12,9 @@
 
 ## Detalles del código y la solución del sistema:
 
-Para esta práctica, he usado Threads para poder controlar varios elementos simultáneamente sin tener que usar delay() y bloquear el programa. Para los modos y estados del sistemas he utilizado enumeradores para poder controlar mejor las acciones de la máquina.
+Para esta práctica, he usado Threads para poder controlar varios elementos simultáneamente sin tener que usar delay() y bloquear el programa. Para los modos y estados del sistemas he utilizado enumeradores para poder controlar mejor las acciones de la máquina. Tenemos los modos: ARRANQUE, SERVICIO y ADMIN; y los submodos de cada uno, en SERVICIO: 
+
+
 
 También he añadido el mecanismo de seguridad de **watchdog**, el cual reinicia el sistema si nadie refresca su variable, evitando que el programa se quede en un bucle eterno.
 Para probar este mecanismo he puesto estas lineas de código (luego se deben borrar para que todo funcione correctamente):
@@ -45,7 +47,7 @@ https://github.com/user-attachments/assets/c72e0eaf-4797-4353-ba4b-c890bdeb595c
 
 **Modificamos los precios de los productos:**
 
-
+https://github.com/user-attachments/assets/82b3e9b1-4954-478b-952a-3f01f480740a
 
 Observamos que después de editar los precios, salen modificados en el catálogo al volver al modo servicio.
 
