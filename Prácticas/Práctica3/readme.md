@@ -47,6 +47,8 @@ https://github.com/user-attachments/assets/c72e0eaf-4797-4353-ba4b-c890bdeb595c
 
 
 
+Observamos que después de editar los precios, salen modificados en el catálogo al volver al modo servicio.
+
 ### -Prueba con el Watchdog:
 
 https://github.com/user-attachments/assets/42d172bd-e657-4a76-a225-714c3d2fc7b2
