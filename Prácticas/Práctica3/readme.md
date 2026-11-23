@@ -15,8 +15,9 @@ Para esta práctica, he usado Threads para poder controlar varios elementos simu
 
 ## Esquema del circuito (con Fritzing):
 
-<img width="1376" height="964" alt="cap_esquema_empotrados_practica3" src="https://github.com/user-attachments/assets/be08b8cf-9925-4662-a3a2-d1a56efac856" />
+<img width="1355" height="962" alt="cap_esquema_empotrados_practica3" src="https://github.com/user-attachments/assets/545f8b44-b82f-4ad4-a416-063e3f367774" />
 
+Cada color del cable representa un sensor.  
 El sensor de temperatura está colocado distinto en el circuito real por falta de cables.
 
 ## Fotos y videos del montaje y su funcionamiento:
