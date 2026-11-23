@@ -355,20 +355,49 @@ void printLCD(){
 //--Función que actua como máquina de estados y decide cuando el sistema cambia de uno a otro
 void stateMachine(){
 
+  //--Comprobar si está en modo admin
+  if(evAdmin){ //--> Se ha pulsado previamente el botón durante 5 segundos
+
+    //--Cambiar de estado en función de si está en uno o en otro
+    if (modo == ADMIN){ //--> Salir de Admin
+      modo = SERVICIO;
+      digitalWrite(led1Pin, LOW);
+      digitalWrite(led2Pin, LOW);
+      reiniciarServicio();
+    }
+    else if (modo == SERVICIO){ //--> Entrar en admin
+      modo = ADMIN;
+      admin = MENU;
+      //menuSel = 0;
+      //--Se encienden los dos leds
+      digitalWrite(led1Pin, HIGH);
+      digitalWrite(led2Pin, HIGH);
+    }
+  }
+  else if(evCancelar && modo == SERVICIO){ //--> Reiniciar sistema
+    reiniciarServicio();
+  }
+
+
   //--Evaluar los valores del joysitck
   switch (modo){
 
-    case ARRANQUE: //--> MODIFICAR
+    case ARRANQUE:
+
+      //--¿Han pasado 500 ms desde la última vez que cambió el LED?
       if (millis() - tEstado >= T_MEDIO_CICLO){
-        tEstado = millis();
-        digitalWrite(ledVerdePin, !digitalRead(ledVerdePin));
+        tEstado = millis(); //-_> Apuntar la "hora" actual para empezar a contar los siguientes 500ms
+
+        //--Invertir el estado del LED, medimos los cambios
+        int estadoActual = digitalRead(led1Pin);
+        digitalWrite(led1Pin, !estadoActual);
         cambiosLed++;
 
-        //--Comprobar los cambios: Se enciende (cambio 1), Se apaga (cambio 2) -->  3 * 2 = 6 cambios
-        if (cambiosLed >= 6){
+        //--Comprobar los cambios
+        if (cambiosLed >= 6){ //--> Se enciende (cambio 1), Se apaga (cambio 2) -->  3 * 2 = 6 cambios (se ha encendido 3 veces)
           digitalWrite(ledVerdePin, LOW);
           modo = SERVICIO;
-          irA(ESPERANDO);
+          irA(ESPERANDO); //--> Comenzamos esperando a clientes
         }
       }
       break;
@@ -378,11 +407,17 @@ void stateMachine(){
 
       switch(servicio){ //--> Contemplar cada modo del servicio
         case ESPERANDO:
-         
+          //--Se detecta a un cliente si la distancia es inferior a 1m
+          if(distance < 100){
+            irA(ENTORNO);
+          }
           break;
 
         case ENTORNO:
-
+          //--Reservar 5 segundos para ver la tempetarura y la humedad (eso lo imprimirá la función printLCD())
+          if(millis() - tEstado >= 5000){ //--> Cuando pasen los 5s, ir al catálogo de productos
+            irA(CATALOGO);
+          }
           break;
 
         case CATALOGO:
@@ -394,7 +429,10 @@ void stateMachine(){
           break;
 
         case RETIRAR:
-         
+          //--Esperar 3s y volver a detectar clientes
+          if(millis() - tEstado >= 3000){
+            irA(ESPERANDO);
+          }
           break;
 
       }
@@ -408,13 +446,9 @@ void stateMachine(){
          
           break;
 
+        //--No indicamos nada porque solo hay que imprimir
         case VER_TEMP:
-
-          break;
-
         case VER_DIST:
-
-          break;
 
         case VER_CONT:
         
