@@ -13,7 +13,7 @@
 
 Para esta práctica, he usado Threads para poder controlar varios elementos simultáneamente sin tener que usar delay() y bloquear el programa. Para los modos y estados del sistemas he utilizado enumeradores para poder controlar mejor las acciones de la máquina.
 
-También he añadido el mecanismo de seguridad de **watchdog**, el cual reinicia el sistema si nadie refresca su variable evitando así que el programa se quede en un bucle eterno.
+También he añadido el mecanismo de seguridad de **watchdog**, el cual reinicia el sistema si nadie refresca su variable, evitando que el programa se quede en un bucle eterno.
 Para probar este mecanismo he puesto estas lineas de código (luego se deben borrar para que todo funcione correctamente):
 
 if (evSelection && modo == ADMIN){  
