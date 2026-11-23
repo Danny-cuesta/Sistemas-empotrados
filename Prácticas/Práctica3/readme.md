@@ -35,8 +35,15 @@ El sensor de temperatura está colocado distinto en el circuito real por falta d
 
 ### -Modo servicio:
 
+https://github.com/user-attachments/assets/ecd14f1d-a8a1-4b4f-b513-dcffa7cab693
 
 ### -Modo admin:
+**Navegamos por el menú y vemos las funciones simples:**
+
+
+
+**Modificamos los precios de los productos:**
+
 
 
 ### -Prueba con el Watchdog:
