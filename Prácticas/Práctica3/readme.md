@@ -31,10 +31,7 @@ El sensor de temperatura está colocado distinto en el circuito real por falta d
 
 ## Foto y videos del montaje y su funcionamiento:
 
-
-
-### -Modo arranque:
-
+(El modo arranque se ve en los demás modos).
 
 ### -Modo servicio:
 
