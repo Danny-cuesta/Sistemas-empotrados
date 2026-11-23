@@ -29,7 +29,7 @@ Indica que cuando el sistema está en modo admin y pulsamos el botón del joysti
 Cada color del cable representa un sensor.  
 El sensor de temperatura está colocado distinto en el circuito real por falta de cables.
 
-## Foto y videos del montaje y su funcionamiento:
+## Videos del montaje y su funcionamiento:
 
 (El modo arranque se ve en los demás modos).
 
