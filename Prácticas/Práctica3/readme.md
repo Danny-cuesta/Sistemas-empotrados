@@ -18,11 +18,11 @@ He creado los hilos en función de los sensores que hay, distancia, temperatura,
 
 Por cada hilo he añadido su función correspondiente y a parte también he necesitado otras externas que me ayudan a tener mejor limpieza, como por ejemplo, para reiniciar el servicio, cambiar de subestado en el servicio o imprimir en la pantalla de forma limpia.
 
-Por último, también he añadido una interrupción para el botón externo ya que las interrupciones nos ayudan a reaccionar a eventos de forma rápida sin tener que estar constantemente revisandolo en el bucle, en el momento que se pulsa el botón, el código se interrumpe y ejecuta la función de la interrupción.
+Por otro lado, también he añadido una interrupción para el botón externo ya que las interrupciones nos ayudan a reaccionar a eventos de forma rápida sin tener que estar constantemente revisandolo en el bucle, en el momento que se pulsa el botón, el código se interrumpe y ejecuta la función de la interrupción.
 
 
 
-También he añadido el mecanismo de seguridad de **watchdog**, el cual reinicia el sistema si nadie refresca su variable, evitando que el programa se quede en un bucle eterno.
+Por último, he integrado el mecanismo de seguridad de **watchdog**, el cual reinicia el sistema si nadie refresca su variable, evitando que el programa se quede en un bucle eterno.
 Para probar este mecanismo he puesto estas lineas de código (luego se deben borrar para que todo funcione correctamente):
 
 if (evSelection && modo == ADMIN){  
