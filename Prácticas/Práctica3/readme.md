@@ -1,3 +1,4 @@
+
 # PRÁCTICA 3: Controlador máquina expendedora
 
 ## Sensores utilizados en la práctica:
@@ -40,7 +41,7 @@ https://github.com/user-attachments/assets/ecd14f1d-a8a1-4b4f-b513-dcffa7cab693
 ### -Modo admin:
 **Navegamos por el menú y vemos las funciones simples:**
 
-
+https://github.com/user-attachments/assets/c72e0eaf-4797-4353-ba4b-c890bdeb595c 
 
 **Modificamos los precios de los productos:**
 
