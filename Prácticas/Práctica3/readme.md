@@ -14,7 +14,7 @@
 
 Para esta práctica, he usado Threads para poder controlar varios elementos simultáneamente sin tener que usar delay() y bloquear el programa. Para los modos y estados del sistemas he utilizado enumeradores para poder controlar mejor las acciones de la máquina. Tenemos los modos: ARRANQUE, SERVICIO y ADMIN; y los submodos de cada uno, en SERVICIO se encuentran: esperando a ser atendido, entorno (temperatura y humedad), el catálogo de productos, preparando (cuando uno de los leds aumentará su brillo progresivamente) y retirar bebida. En ADMIN están: el menú de funciones del admin, y sus distintas funciones como "ver temperatura", "ver distancia", "ver contador", ver los precios de la lista y poder editarlos.
 
-He creado los hilos en función de los sensores que hay, distancia, temperatura, joystick, pantalla LCD y a partir también necesito otro para la máquina de estados del sistema, el cual cambiará de acción a medida que se lo vayamos indicando.
+He creado los hilos en función de los sensores que hay, distancia, temperatura, joystick, pantalla LCD y a parte también necesito otro para la máquina de estados del sistema, el cual cambiará de acción a medida que se lo vayamos indicando.
 
 Por cada hilo he añadido su función correspondiente y a parte también he necesitado otras externas que me ayudan a tener mejor limpieza, como por ejemplo para reiniciar el servicio, cambiar de subestado en el servicio o imprimir en la pantalla de forma limpia.
 
