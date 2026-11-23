@@ -44,5 +44,6 @@ El sensor de temperatura está colocado distinto en el circuito real por falta d
 
 ### -Prueba con el Watchdog:
 
+https://github.com/user-attachments/assets/42d172bd-e657-4a76-a225-714c3d2fc7b2
 
 Vemos que cuando activamos el modo admin y pulsamos cualquier selección, el programa se queda congelado por poquito, pero gracias al watchdog, se reinicia. 
