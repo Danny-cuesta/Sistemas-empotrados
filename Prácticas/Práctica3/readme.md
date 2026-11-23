@@ -17,7 +17,7 @@ También he añadido el mecanismo de seguridad de **watchdog**, el cual reinicia
 Para probar este mecanismo he puesto estas lineas de código (luego se deben borrar para que todo funcione correctamente):
 
 if (evSelection && modo == ADMIN){  
-    while (true);  
+        while (true);  
 }  
 
 Indica que cuando el sistema está en modo admin y pulsamos el botón del joystick, entra en un bucle infinito, pero esto se evita con este mecanismo y se reinicia todo el programa.
@@ -33,16 +33,16 @@ El sensor de temperatura está colocado distinto en el circuito real por falta d
 
 
 
-### Modo arranque:
+### -Modo arranque:
 
 
-### Modo servicio:
+### -Modo servicio:
 
 
-### Modo admin:
+### -Modo admin:
 
 
-### Prueba con el Watchdog:
+### -Prueba con el Watchdog:
 
 
 
